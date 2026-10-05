@@ -1,0 +1,22 @@
+id: secuscan-idor
+
+info:
+  name: SecuScan IDOR Lab
+  author: secuscan-lab
+  severity: high
+  description: Detects unauthenticated access to another seeded user's profile through a direct object identifier.
+  tags: secuscan,idor,training
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/users/2/profile"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: body
+        words:
+          - 'bob@example.com'

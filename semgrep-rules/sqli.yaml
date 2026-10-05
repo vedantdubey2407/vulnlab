@@ -1,0 +1,20 @@
+rules:
+  - id: secuscan-python-sqli-string-interpolation
+    languages: [python]
+    severity: ERROR
+    message: >-
+      Potential SQL injection: user-controlled input is interpolated into a SQL
+      statement before it is executed. Use parameterized queries instead.
+    metadata:
+      category: security
+      technology: [python, sqlite]
+      cwe: CWE-89
+      description: Detects f-string SQL passed directly to an execute call.
+      why_dangerous: >-
+        Attackers can change the structure of the SQL statement, potentially
+        bypassing intended filters or exposing data.
+    patterns:
+      - pattern: $DB.execute($QUERY)
+      - metavariable-regex:
+          metavariable: $QUERY
+          regex: '^f["''].*\{.*\}.*["'']$'

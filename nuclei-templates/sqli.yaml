@@ -1,0 +1,25 @@
+id: secuscan-sqli
+
+info:
+  name: SecuScan SQL Injection Lab
+  author: secuscan-lab
+  severity: high
+  description: Detects the intentionally vulnerable /search endpoint by injecting a condition that returns all seeded users.
+  tags: secuscan,sqli,training
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/search?q=%27%20OR%201%3D1%20--%20"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: body
+        condition: and
+        words:
+          - 'alice@example.com'
+          - 'bob@example.com'
+          - 'carol@example.com'

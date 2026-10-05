@@ -1,0 +1,39 @@
+id: secuscan-weak-jwt
+
+info:
+  name: SecuScan Weak JWT Authentication Lab
+  author: secuscan-lab
+  severity: high
+  description: Detects the lab's weak authentication by logging in with the documented shared password and confirming that the resulting bearer token grants profile access.
+  tags: secuscan,jwt,authentication,training
+
+http:
+  - raw:
+      - |
+        POST /login HTTP/1.1
+        Host: {{Hostname}}
+        Content-Type: application/json
+
+        {"username":"alice","password":"password123"}
+
+    extractors:
+      - type: json
+        name: access_token
+        internal: true
+        json:
+          - '.access_token'
+
+  - method: GET
+    path:
+      - "{{BaseURL}}/users/1/profile"
+    headers:
+      Authorization: "Bearer {{access_token}}"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: body
+        words:
+          - 'alice@example.com'

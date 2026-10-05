@@ -1,0 +1,22 @@
+rules:
+  - id: secuscan-fastapi-profile-idor
+    languages: [python]
+    severity: ERROR
+    message: >-
+      Potential IDOR: a FastAPI profile endpoint reads a record using a path
+      parameter without an obvious authorization/ownership check. Enforce that
+      the authenticated subject is allowed to access the requested object.
+    metadata:
+      category: security
+      technology: [python, fastapi, sqlite]
+      cwe: CWE-639
+      description: Detects the intentionally vulnerable profile route and direct user_id lookup.
+      why_dangerous: >-
+        An attacker can change an object identifier and read another user's
+        private data when ownership is not checked.
+    patterns:
+      - pattern-inside: |
+          @app.get("/users/{user_id}/profile")
+          def $FUNC(user_id: int, ...):
+              ...
+      - pattern: $DB.execute($SQL, (user_id,))

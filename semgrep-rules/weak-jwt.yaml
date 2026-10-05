@@ -1,0 +1,38 @@
+rules:
+  - id: secuscan-weak-jwt-hardcoded-secret
+    languages: [python]
+    severity: ERROR
+    message: >-
+      Weak JWT implementation: jwt.encode uses a hardcoded short/shared secret.
+      Use a strong secret from a secret manager and include an expiry claim.
+    metadata:
+      category: security
+      technology: [python, jwt]
+      cwe: CWE-798
+      description: Detects JWT signing with an obvious hardcoded weak secret.
+      why_dangerous: >-
+        Anyone who learns a weak signing key can forge tokens. Long-lived tokens
+        without an exp claim also increase the impact of token theft.
+    patterns:
+      - pattern: jwt.encode($CLAIMS, $SECRET, algorithm="HS256")
+      - metavariable-regex:
+          metavariable: $SECRET
+          regex: '^["''](secret|password|changeme|test|admin)["'']$'
+
+  - id: secuscan-jwt-without-exp-claim
+    languages: [python]
+    severity: WARNING
+    message: JWT payload appears to be created without an exp claim; add a short expiration.
+    metadata:
+      category: security
+      technology: [python, jwt]
+      cwe: CWE-613
+      description: Detects a simple dict passed to jwt.encode without exp.
+      why_dangerous: Stolen tokens can remain usable indefinitely.
+    patterns:
+      - pattern: jwt.encode($CLAIMS, $SECRET, algorithm="HS256")
+      - metavariable-pattern:
+          metavariable: $CLAIMS
+          patterns:
+            - pattern: "{...}"
+            - pattern-not-regex: "\\bexp\\b"
